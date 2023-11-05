@@ -1,23 +1,33 @@
 import React, { useRef, useEffect } from 'react';
 import * as echarts from 'echarts';
+import { EChartOption } from 'echarts';
 
-function TokensBar({ data }) {
+type TableRowData = {
+    legendData: any,
+    actual_price: string,
+    address: string,
+    amount: number,
+    chain_id: number,
+    chain_name: string,
+    decimals: number,
+    logo_url: string,
+    name: string,
+    rawAmount: number,
+    symbol: string
+}
+
+function TransactionsLine({ data }: {data: TableRowData[]}) {
     console.log('echarts', data)
     const chartRef = useRef(null);
 
-
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading({ text: 'loading...' });
-        // const pieData = data.map(token => ({
-        //     value: parseFloat(token.amount) * parseFloat(token.price),
-        //     name: token.chain_name
-        // }));
+        chartInstance.showLoading('default', { text: 'loading...' });
 
         // 定义一个基础的option结构
-        let option = {
+        let option: EChartOption = {
             title: {
-                text: "Assets",
+                text: "Assets Distribution",
                 textStyle: {
                     fontSize: 20
                 }
@@ -43,11 +53,12 @@ function TokensBar({ data }) {
                 right: 10,
                 top: 20,
                 bottom: 20,
-                data: data.legendData
+                // data: [data.legendData]
+                data: []
             },
             tooltip: {
                 trigger: 'item',
-                formatter: function (params) {
+                formatter: function (params: any) {
                     // console.log('params', params)
                     return params.data.name + ': ' + params.value + ' (' + params.percent + '%)';
                 }
@@ -57,18 +68,18 @@ function TokensBar({ data }) {
             // const names = data.map(item => item.chain_name);
             // const amounts = data.map(item => item.amount);
             console.log(data)
-            const pieData = data.map(token => ({
+            const pieData = data.map((token: {amount: any, actual_price: any, chain_name: any}, ) => ({
                 value: parseFloat(token.amount) * parseFloat(token.actual_price),
                 name: token.chain_name
             }));
-            option.series[0].data = pieData;
+            option.series![0].data = pieData;
 
             setTimeout(() => {
                 chartInstance.setOption(option);
                 chartInstance.hideLoading();
             }, 500);
         } else {
-            option.series[0].data = [{ value: 0, name: 'No Data' }];
+            option.series![0].data = [{ value: 0, name: 'No Data' }];
             // option.series[0].label = {
             //     show: true,
             //     position: 'top',
@@ -91,4 +102,4 @@ function TokensBar({ data }) {
     );
 }
 
-export default TokensBar;
+export default TransactionsLine;

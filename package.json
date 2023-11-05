@@ -11,6 +11,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@rainbow-me/rainbowkit": "^1.2.0",
+    "@types/echarts": "^4.9.20",
     "bignumber.js": "^9.1.2",
     "echarts": "^5.4.3",
     "echarts-for-react": "^3.0.2",

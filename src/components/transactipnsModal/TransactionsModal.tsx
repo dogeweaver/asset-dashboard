@@ -2,16 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import LoadingModal from "@/components/loadingModal/LoadingModal";
 
-const TransactionsModal = (props) => {
+interface Transaction {
+  from_address?: string;
+  to_address?: string;
+  hash?: string;
+  block_timestamp?: string;
+  block_number?: number;
+  value?: string;
+  gas_price?: string;
+  gas_used?: string;
+}
+
+const TransactionsModal = (props: any) => {
   console.log(props);
   const { chainName, txHash } = props;
-  const [list, setList] = useState({})
+  const [list, setList] = useState<Transaction>({})
   const key = '00aa01cefaf84f8fcd088395142c108a2c4aadbc'
   const [searchValue, setSearchValue] = useState('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
   const [loading, setLading] = useState(true)
 
 // coins tokens
-  const TransactionDetails = async (chain_name: any, tx_hash: any) => {
+  const TransactionDetails = async () => {
     try {
       const response = await fetch('https://datalayer.decommas.net/datalayer/api/v1/transaction/' + chainName + '/' + txHash + '?api-key=' + key);
       const res = await response.json();

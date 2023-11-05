@@ -1,27 +1,38 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import Header from "@/components/header/Header";
-
 import BigNumber from 'bignumber.js';
 import Skeleton from "@/components/skeleton/Skeleton";
 import TokensBar from "@/components/echart/TokensBar";
 import Wagmiagmi from "@/components/wagmi/Wagmi";
 
-const Tokens = () => {
+type TableRowData = {
+    actual_price: string,
+    address: string,
+    amount: number,
+    chain_id: number,
+    chain_name: string,
+    decimals: number,
+    logo_url: string,
+    name: string,
+    rawAmount: number,
+    symbol: string
+}
+
+const ERC20Tokens = () => {
 
     const key = '00aa01cefaf84f8fcd088395142c108a2c4aadbc'
     const [localSearchValue, setLocalSearchValue] = useState('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
-    const [table, setTable] = useState([])
+    const [table, setTable] = useState<TableRowData[]>([])
     const [loading, setLoading] = useState(false)
 
-    const handleSearch = (searchValue) => {
+    const handleSearch = (searchValue: any) => {
         console.log('searchValue', searchValue)
         setLocalSearchValue(searchValue);
         ERC20Tokens(searchValue);
     }
 
-    const ERC20Tokens = async (searchValue) => {
+    const ERC20Tokens = async (searchValue: any) => {
         setTable([])
         setLoading(true)
         try {
@@ -29,11 +40,18 @@ const Tokens = () => {
             const res = await response.json();
             // console.log('res', res.result)
             if (res.result.length) {
-                const updatedResults = res.result.map((item: any) => {
-                    item.amount = item.amount / 1e18
+                const updatedResults: TableRowData[] = res.result.map((item: any) => {
+                    let amount_bg = BigNumber(item.amount);
+                    let decimals_bg = BigNumber(Math.pow(10, item.decimals));
+                    let rawAmount = Number(amount_bg.div(decimals_bg));
+
+                    item.amount = rawAmount * item.actual_price;
+                    item.rawAmount = rawAmount;
                     item.actual_price = formatNumber(Number(item.actual_price))
                     return item
                 })
+
+                console.log('updatedResults: ', updatedResults);
                 setTable(updatedResults)
             } else {
                 setTable([])
@@ -84,7 +102,7 @@ const Tokens = () => {
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                            {table.map((item: {chain_id: any, logo_url: any, symbol: any, actual_price: any, amount: any, address: any}, index) => (
+                            {table.map((item: {chain_id: any, logo_url: any, symbol: any, actual_price: any, amount: any, address: any, rawAmount: number}, index) => (
                                 <tr key={index}>
                                     <td>{index + 1}</td>
                                     <td className="py-5 pl-4 pr-3 sm:pl-0">
@@ -99,7 +117,7 @@ const Tokens = () => {
                                     </td>
                                     <td className="text-xs text-blue-700 hover:underline"><a href={'https://etherscan.io/address/' + item.address} target="_blank">{item.address}</a></td>
                                     <td>${item.actual_price}</td>
-                                    <td>{item.amount}</td>
+                                    <td>{item.rawAmount}</td>
                                 </tr>
                             ))}
                             </tbody>
@@ -112,4 +130,4 @@ const Tokens = () => {
     );
 };
 
-export default Tokens;
+export default ERC20Tokens;

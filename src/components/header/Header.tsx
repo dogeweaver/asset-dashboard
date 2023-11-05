@@ -1,6 +1,6 @@
 'use client'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, ChangeEvent} from 'react';
 import '@rainbow-me/rainbowkit/styles.css';
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
@@ -23,10 +23,15 @@ import {
 } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
-export default function Header({ onSearch, onchangeQuery }) {
+interface HeaderProps {
+    onSearch: (searchValue: string) => void;
+    onchangeQuery: (query: string) => void;
+}
+
+export default function Header({ onSearch, onchangeQuery }: HeaderProps) {
 
     const router = useRouter()
-    const query = window.location.search.substring(1);
+    // const query = location.search.substring(1);
 
     const { address, isConnected } = useAccount()
     const { connect } = useConnect({
@@ -35,13 +40,15 @@ export default function Header({ onSearch, onchangeQuery }) {
     const { disconnect } = useDisconnect()
 
     const key = '00aa01cefaf84f8fcd088395142c108a2c4aadbc'
-
+    const [query, setQuery] = useState('');
     const [inputValue, setInputValue] = useState(query ? query : '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045');
+    // const [inputValue, setInputValue] = useState('');
     const [connecting, setConnecting] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
 
     // input 框改变 存值
-    const handleInputChange = (event) => {
+    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+        console.log("handleInputChange: ", event);
         setInputValue(event.target.value);
     }
 
@@ -71,6 +78,12 @@ export default function Header({ onSearch, onchangeQuery }) {
 
     // 页面一载入就执行
     useEffect(() => {
+        console.log('window.location', window.location)
+        const query = window.location.search.substring(1);
+        console.log('window.location.search.substring(1);', query)
+        // setInputValue(query ? query : '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045');
+        // 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+
         console.log('header 页面一载入就执行')
         console.log('query', query)
         console.log('address', address)
@@ -79,11 +92,18 @@ export default function Header({ onSearch, onchangeQuery }) {
         if(connecting) { // 刚刚点击连接钱包
             console.log('刚刚点击连接钱包')
             router.push('?' + address);
-            onSearch(address);
-            setInputValue(address);
+            onSearch(address as string);
+            setInputValue(address as string);
             setConnecting(false)
             return
         }
+
+        // if (!inputValue) {
+        //     router.push('?' + address);
+        //     onSearch(address);
+        //     setInputValue('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045');
+        //     console.log('inputvalue', inputValue)
+        // }
 
         if (!address && !query) {
             router.push('?' + inputValue);
@@ -99,30 +119,6 @@ export default function Header({ onSearch, onchangeQuery }) {
 
         setDisconnecting(false)
 
-        // if (!address) {
-        //     console.log('没有地址')
-        // }
-        //
-        // if (query) {
-        //     console.log('有 query', query)
-        //     router.push('?' + query);
-        //     onSearch(query);
-        // } else {
-        //     if (!query && !address) {
-        //         console.log('没有地址')
-        //         router.push('?' + inputValue);
-        //     }
-        //
-        //     if (address && isConnected) { //钱包连接着
-        //         setInputValue(currentValue => address !== currentValue ? address : currentValue);
-        //         onSearch(address);
-        //         router.push('?' + address);
-        //         console.log('Connected address:', address);
-        //     }
-        // }
-
-
-
     }, [address, isConnected]);
 
 
@@ -131,7 +127,7 @@ export default function Header({ onSearch, onchangeQuery }) {
             <div className="absolute right-10 top-8">
                 {isConnected ?
                     <div>
-                        <div className="absolute right-10 top-8"></div>
+                        <div className="absolute right-10 top-8 -z-50"></div>
                         <button className="flex-none rounded-md px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 bg-indigo-600" onClick={onDisconnect}>Disconnect</button>
                     </div> :
                     <button className="flex-none rounded-md px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 bg-indigo-600" onClick={onConnect}>Connect Wallet</button>

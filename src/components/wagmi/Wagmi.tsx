@@ -10,11 +10,16 @@ const config = createConfig({
     }),
 })
 
-export default function Wagmi({ onSearch, onchangeQuery }) {
-    const handleSearch = (searchValue) => {
+interface WagmiagmiProps {
+    onSearch: (searchValue: any) => void;
+    onchangeQuery?: (query: any) => void;  // 使用 ? 来标记这个属性为可选
+}
+
+const Wagmiagmi: React.FC<WagmiagmiProps> = ({ onSearch, onchangeQuery }) => {
+    const handleSearch = (searchValue: any) => {
         onSearch(searchValue);
     }
-    const handlechangeQuery = (query) => {
+    const handlechangeQuery = (query: any) => {
         onSearch(query);
     }
     return (
@@ -23,3 +28,5 @@ export default function Wagmi({ onSearch, onchangeQuery }) {
         </WagmiConfig>
     )
 }
+
+export default Wagmiagmi;

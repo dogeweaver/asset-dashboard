@@ -2,32 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import BigNumber from 'bignumber.js';
-import Header from "@/components/header/Header";
-import NftsBar from "@/components/echart/NftsBar";
 import Wagmiagmi from "@/components/wagmi/Wagmi";
 
 const Nfts = () => {
 
+    interface TableItem {
+        image_url: string;
+        collection_name: string;
+        name: string;
+        contract_address: string;
+        amount: number;
+        // ... 其他属性
+    }
+
     const key = '00aa01cefaf84f8fcd088395142c108a2c4aadbc'
     // const [searchValue, setSearchValue] = useState('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
     const [localSearchValue, setLocalSearchValue] = useState('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
-    const [table, setTable] = useState([])
+    const [table, setTable] = useState<TableItem[]>([]);
     const [barData, setBarData] = useState([])
 
-    const handleSearch = (searchValue) => {
+    const handleSearch = (searchValue: any) => {
         console.log('searchValue', searchValue)
         setLocalSearchValue(searchValue);
         NFTs(searchValue);
     }
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const delay = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
 
-    const delayedNFTMetadata = async (chain_name, contract_address, token_id, delayMs) => {
+    const delayedNFTMetadata = async (chain_name: any, contract_address: any, token_id: any, delayMs: any) => {
         await delay(delayMs);
         return NFTMetadata(chain_name, contract_address, token_id);
     };
 
     // coins NFTS
-    const NFTs = async (searchValue) => {
+    const NFTs = async (searchValue: any) => {
         try {
             const response: Response = await fetch('https://datalayer.decommas.net/datalayer/api/v1/nfts/' + searchValue + '?api-key=' + key);
             const res = await response.json();
@@ -45,6 +52,7 @@ const Nfts = () => {
                     item.name = data.name;
                     console.log(item);
                     // 使用函数式更新来更新表格中的一条信息
+                    const updatedTable = [...table];
                     setTable(prevTable => {
                         // 创建一个新的数组，包含之前的所有项和新更新的项
                         const updatedTable = [...prevTable];
@@ -86,8 +94,6 @@ const Nfts = () => {
     return (
         <main>
             <Wagmiagmi onSearch={handleSearch} />
-            {/*<Header onSearch={handleSearch} />*/}
-            <NftsBar data={barData}></NftsBar>
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">

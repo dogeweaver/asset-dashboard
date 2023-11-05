@@ -1,30 +1,45 @@
 import React, { useRef, useEffect } from 'react';
 import * as echarts from 'echarts';
+import { EChartOption } from 'echarts';
 
-function TokensBar({ data }) {
-    console.log('echarts', data)
+type TableRowData = {
+    actual_price: string,
+    address: string,
+    amount: number,
+    chain_id: number,
+    chain_name: string,
+    decimals: number,
+    logo_url: string,
+    name: string,
+    rawAmount: number,
+    symbol: string
+}
+
+function TokensBar({ data }: {data: TableRowData[]}) {
     const chartRef = useRef(null);
-
 
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading({ text: 'loading...' });
+        chartInstance.showLoading('default', { text: 'loading...' });
         // 定义一个基础的option结构
-        let option = {
+        let option: EChartOption = {
             title: {
-                text: "TOKENS",
+                text: "Value In USD",
                 textStyle: {
                     fontSize: 20
                 }
             },
             grid: {
                 // left: "100px",
-                bottom: "8%",
+                bottom: "20%",
                 right: "0%",
             },
             xAxis: {
                 type: 'category',
-                data: []
+                data: [],
+                axisLabel: {
+                    rotate: -45, // 设置横坐标标签倾斜 45 度
+                }
             },
             yAxis: {
                 type: 'value'
@@ -41,19 +56,19 @@ function TokensBar({ data }) {
             },
         };
         if (data && data.length > 0) {
-            const names = data.map(item => item.chain_name);
-            const amounts = data.map(item => item.amount);
-            option.xAxis.data = names;
-            option.series[0].data = amounts;
+            const names = data.map((item: {name: string}) => item.name);
+            const amounts = data.map((item: {amount: number}) => item.amount);
+            (option.xAxis as EChartOption.XAxis).data = names;
+            option.series![0].data = amounts;
 
             setTimeout(() => {
                 chartInstance.setOption(option);
                 chartInstance.hideLoading();
             }, 500);
         } else {
-            option.xAxis.data = ['No Data']; // 可以设为空数组，如果你不希望显示类目轴
-            option.series[0].data = [0];
-            option.series[0].label = {
+            (option.xAxis as EChartOption.XAxis).data = ['No Data']; // 可以设为空数组，如果你不希望显示类目轴
+            option.series![0].data = [0];
+            (option.series![0] as echarts.EChartOption.SeriesBar).label = {
                 show: true,
                 position: 'top',
                 formatter: 'No Data'

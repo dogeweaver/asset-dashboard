@@ -1,14 +1,30 @@
 import React, { useRef, useEffect } from 'react';
 import * as echarts from 'echarts';
+import { EChartOption } from 'echarts';
 
-function TransactionsLine({ data }) {
-    console.log('data', data)
+type TableRowData = {
+    actual_price: string,
+    address: string,
+    amount: number,
+    chain_id: number,
+    chain_name: string,
+    decimals: number,
+    logo_url: string,
+    name: string,
+    rawAmount: number,
+    symbol: string,
+    block_timestamp: any,
+    fees: any
+}
+
+function TransactionsLine({ data }: {data: TableRowData[]}) {
+    console.log('TransactionsLine data', data)
     const chartRef = useRef(null);
 
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading({ text: 'loading...' });
-        let option = {
+        chartInstance.showLoading('default', { text: 'loading...' });
+        let option: EChartOption = {
             title: {
                 text: "Transaction Fees Over Time",
                 textStyle: {
@@ -41,16 +57,13 @@ function TransactionsLine({ data }) {
                 type: 'line',
                 smooth: true,
                 areaStyle: {},
-                emphasis: {
-                    focus: 'series'
-                }
             }]
         };
         if (data && data.length > 0) {
-            const dates = data.map(item => new Date(item.block_timestamp * 1000).toLocaleDateString());
-            const fees = data.map(item => +item.fee / 1e18); // 如果数据是wei, 这样可以转换成eth
-            option.xAxis.data = dates;
-            option.series[0].data = fees;
+            const dates = data.map((item: {block_timestamp: any}) => new Date(item.block_timestamp * 1000).toLocaleDateString());
+            const fees = data.map(item => +item.fees); // 如果数据是wei, 这样可以转换成eth
+            (option.xAxis as EChartOption.XAxis).data = dates;
+            option.series![0].data = fees;
 
             setTimeout(() => {
                 chartInstance.setOption(option);
@@ -58,13 +71,8 @@ function TransactionsLine({ data }) {
                 chartInstance.hideLoading();
             }, 500);
         } else {
-            option.xAxis.data = ['No Data'];
-            option.series[0].data = [0];
-            option.series[0].label = { // 添加这个标签配置
-                show: true,
-                position: 'top',
-                formatter: 'No Data'
-            };
+            (option.xAxis as EChartOption.XAxis).data = ['No Data'];
+            option.series![0].data = [0];
             chartInstance.hideLoading();
         }
 
