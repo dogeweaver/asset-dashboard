@@ -20,7 +20,6 @@ function TokensBar({ data }: {data: TableRowData[]}) {
 
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading('default', { text: 'loading...' });
         // 定义一个基础的option结构
         let option: EChartOption = {
             title: {
@@ -63,7 +62,6 @@ function TokensBar({ data }: {data: TableRowData[]}) {
 
             setTimeout(() => {
                 chartInstance.setOption(option);
-                chartInstance.hideLoading();
             }, 500);
         } else {
             (option.xAxis as EChartOption.XAxis).data = ['No Data']; // 可以设为空数组，如果你不希望显示类目轴
@@ -73,7 +71,6 @@ function TokensBar({ data }: {data: TableRowData[]}) {
                 position: 'top',
                 formatter: 'No Data'
             };
-            chartInstance.hideLoading();
         }
 
         chartInstance.setOption(option);

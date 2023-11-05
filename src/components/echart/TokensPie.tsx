@@ -22,8 +22,6 @@ function TransactionsLine({ data }: {data: TableRowData[]}) {
 
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading('default', { text: 'loading...' });
-
         // 定义一个基础的option结构
         let option: EChartOption = {
             title: {
@@ -76,16 +74,9 @@ function TransactionsLine({ data }: {data: TableRowData[]}) {
 
             setTimeout(() => {
                 chartInstance.setOption(option);
-                chartInstance.hideLoading();
             }, 500);
         } else {
             option.series![0].data = [{ value: 0, name: 'No Data' }];
-            // option.series[0].label = {
-            //     show: true,
-            //     position: 'top',
-            //     formatter: 'No Data'
-            // };
-            chartInstance.hideLoading();
         }
 
         chartInstance.setOption(option);

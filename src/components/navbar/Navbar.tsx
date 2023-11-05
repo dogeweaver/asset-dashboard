@@ -2,6 +2,7 @@
 // import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useRouter, usePathname} from 'next/navigation';
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'
 
 function classNames(...classes: any) {
     return classes.filter(Boolean).join(' ')
@@ -10,8 +11,9 @@ function classNames(...classes: any) {
 export default function Navbar() {
     const router = useRouter()
     const pathname = usePathname();
+    const searchParams = useSearchParams()
+    const query = searchParams.get('address')
 
-    const [query, setQuery] = useState('')
     const navbar = [
         { name: 'Tokens', href: '/tokens', current: pathname.match(/^\/tokens$/) },
         { name: 'ERC20-Tokens', href: 'erc-20-tokens', current: pathname.match('/erc-20-tokens') },
@@ -42,7 +44,7 @@ export default function Navbar() {
                             <ul role="list" className="-mx-2 space-y-1">
                                 {navbar.map((item) => (
                                     <li key={item.name}>
-                                        <span onClick={() => {router.push(item.href + '?' + query )}}
+                                        <span onClick={() => {router.push(item.href + '?address=' + query )}}
                                             className={classNames(
                                                 item.current ? 'bg-gray-800 text-white' : 'cursor-pointer text-gray-400 hover:text-white hover:bg-gray-800',
                                                 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'

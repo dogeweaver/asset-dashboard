@@ -23,7 +23,6 @@ function TransactionsLine({ data }: {data: TableRowData[]}) {
 
     useEffect(() => {
         const chartInstance = echarts.init(chartRef.current);
-        chartInstance.showLoading('default', { text: 'loading...' });
         let option: EChartOption = {
             title: {
                 text: "Transaction Fees Over Time",
@@ -68,12 +67,10 @@ function TransactionsLine({ data }: {data: TableRowData[]}) {
             setTimeout(() => {
                 chartInstance.setOption(option);
 
-                chartInstance.hideLoading();
             }, 500);
         } else {
             (option.xAxis as EChartOption.XAxis).data = ['No Data'];
             option.series![0].data = [0];
-            chartInstance.hideLoading();
         }
 
         chartInstance.setOption(option);
