@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import BigNumber from 'bignumber.js';
 import Wagmiagmi from "@/components/wagmi/Wagmi";
 import Skeleton from "@/components/skeleton/Skeleton";
 
 const Nfts = () => {
+
+    const abortControllerRef = useRef(new AbortController());
 
     interface TableItem {
         image_url: string;
@@ -26,6 +28,11 @@ const Nfts = () => {
 
     const handleSearch = (searchValue: any) => {
         console.log('searchValue', searchValue)
+        // 取消之前的请求
+        abortControllerRef.current.abort();
+        // 创建一个新的 abort controller 为下一个请求做准备
+        abortControllerRef.current = new AbortController();
+        // 设置新的本地搜索值并触发新的请求
         setLocalSearchValue(searchValue);
         NFTs(searchValue);
         setReload(true)
@@ -40,19 +47,28 @@ const Nfts = () => {
 
     // coins NFTS
     const NFTs = async (searchValue: any) => {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = new AbortController();
+        const { signal } = abortControllerRef.current;
         try {
-            const response: Response = await fetch('https://datalayer.decommas.net/datalayer/api/v1/nfts/' + searchValue + '?api-key=' + key);
+            const response: Response = await fetch(
+                'https://datalayer.decommas.net/datalayer/api/v1/nfts/' + searchValue + '?api-key=' + key,
+                { signal }
+            );
             const res = await response.json();
             console.log('res', res);
-            setBarData(res.result)
+            setBarData(res.result);
+            setTable(res.result)
             if (res.result.length) {
-                setTable(res.result);
                 for (let i = 0; i < res.result.length; i++) {
-                    // console.log(11111, searchValue)
-                    // if (reload) return; // 如果重新请求接口
+                    if (signal.aborted) {
+                        // 如果请求已被取消，则退出循环
+                        console.log('Request has been cancelled, exiting loop');
+                        setLoading(false)
+                        return;
+                    }
                     const item = res.result[i];
-                    console.log(item.amount);
-                    const data = await NFTMetadata(item.chain_name, item.contract_address, item.token_id);
+                    const data = await NFTMetadata(item.chain_name, item.contract_address, item.token_id, { signal });
                     console.log(data);
                     item.image_url = data.image_url;
                     item.collection_name = data.collection_name;
@@ -77,13 +93,21 @@ const Nfts = () => {
                 setReload(false)
                 setLoading(false)
             }
-        } catch (error) {
-            setLoading(false)
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                console.log('Request has been cancelled');
+            } else {
+                // 处理其他类型的错误
+                console.log(`querySignatureFromOwn ${error}`);
+            }
+            setTimeout(() => {
+                setLoading(false)
+            }, 1000)
             console.log(`querySignatureFromOwn ${error}`);
         }
     }
 
-    const NFTMetadata = async (chain_name: any, contract_address: any, token_id: any) => {
+    const NFTMetadata = async (chain_name: any, contract_address: any, token_id: any, signal: any) => {
         try {
             const response: Response = await fetch('https://datalayer.decommas.net/datalayer/api/v1/nft_metadata/' + chain_name + '/' + contract_address + '/' + token_id + '/?api-key=' + key);
             const res = await response.json();
@@ -100,8 +124,12 @@ const Nfts = () => {
     }
 
     useEffect(() => {
-        // NFTs(localSearchValue);
-    }, []);
+        // 当组件卸载时，这个函数会被调用
+        return () => {
+            // 取消所有挂起的请求
+            abortControllerRef.current.abort();
+        };
+    }, []); // 空依赖数组表示这个effect只在组件挂载和卸载时运行
 
     return (
         <main>
@@ -152,8 +180,8 @@ const Nfts = () => {
                             ))}
                             </tbody>
                         </table>
-                        {!barData.length && <Skeleton></Skeleton>}
-                        {!loading && table.length === 0 && (
+                        {!barData.length && loading && <Skeleton></Skeleton>}
+                        {!loading && !barData.length && (
                             <div className="flex justify-center items-center text-center h-96 text-gray-600">
                                 No data
                             </div>
