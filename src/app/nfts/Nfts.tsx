@@ -39,12 +39,6 @@ const Nfts = () => {
     }
     const delay = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
 
-    const delayedNFTMetadata = async (chain_name: any, contract_address: any, token_id: any, delayMs: any) => {
-        await delay(delayMs);
-        return NFTMetadata(chain_name, contract_address, token_id);
-    };
-
-
     // coins NFTS
     const NFTs = async (searchValue: any) => {
         abortControllerRef.current.abort();
